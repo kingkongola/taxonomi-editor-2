@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --animate-in: fade-in 0s;
+  --animate-out: fade-out 0s;
+  --fade-in-0: 0;
+  --zoom-in-95: scale(0.95);
+  --slide-in-from-top-48: translateY(-48%);
+}
+
+@layer utilities {
+  .animate-in {
+    animation-name: enter;
+    animation-duration: 150ms;
+    --tw-enter-opacity: initial;
+    --tw-enter-scale: initial;
+    --tw-enter-rotate: initial;
+    --tw-enter-translate-x: initial;
+    --tw-enter-translate-y: initial;
+  }
+
+  .fade-in-0 {
+    --tw-enter-opacity: 0;
+  }
+
+  .zoom-in-95 {
+    --tw-enter-scale: 0.95;
+  }
+
+  .slide-in-from-top-\[48\%\] {
+     --tw-enter-translate-y: -48%;
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
