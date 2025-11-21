@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import ReactFlow, {
+import {
+  ReactFlow,
   MiniMap,
   Controls,
   Background,
@@ -9,8 +10,8 @@ import ReactFlow, {
   Edge,
   Handle,
   Position,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import { TaxonomyNode } from '@/lib/taxonomy';
 
 // Custom Node Component

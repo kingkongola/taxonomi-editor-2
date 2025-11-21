@@ -24,11 +24,11 @@ test.describe('Taxonomy Workstation E2E Flows', () => {
     // 1. Open Command Palette
     await page.waitForTimeout(1000);
     try {
-        await expect(page.getByPlaceholder('Type a command or search...')).toBeVisible({ timeout: 2000 });
+      await expect(page.getByPlaceholder('Type a command or search...')).toBeVisible({ timeout: 2000 });
     } catch (e) {
-        await page.evaluate(() => {
-             document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
-        });
+      await page.evaluate(() => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+      });
     }
     await expect(page.getByPlaceholder('Type a command or search...')).toBeVisible();
 
@@ -61,7 +61,7 @@ test.describe('Taxonomy Workstation E2E Flows', () => {
     await expect(page.getByText('A high-level, class-based, object-oriented programming language.')).toBeVisible();
     await expect(page.getByText('Concept').first()).toBeVisible();
 
-    await expect(page.getByText('related')).toBeVisible();
+    await expect(page.locator('section').filter({ hasText: 'Relations' }).getByText('related')).toBeVisible();
     const pythonLink = page.getByRole('link', { name: 'Python' });
     await expect(pythonLink).toBeVisible();
 
@@ -96,6 +96,26 @@ test.describe('Taxonomy Workstation E2E Flows', () => {
 
     // 4. Verify UI update
     await expect(page.getByRole('heading', { name: 'Java Updated' })).toBeVisible();
+  });
+
+  test('Scenario 5: Sidebar Navigation', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByRole('link', { name: 'Graph' }).click();
+    await expect(page).toHaveURL(/\/graph/);
+    await expect(page.getByText('Graph Explorer')).toBeVisible();
+
+    await page.getByRole('link', { name: 'Data' }).click();
+    await expect(page).toHaveURL(/\/data/);
+    await expect(page.getByText('Data Overview')).toBeVisible();
+
+    await page.getByRole('link', { name: 'Workspace' }).click();
+    await expect(page).toHaveURL(/\/workspace/);
+    await expect(page.getByText('Workspaces')).toBeVisible();
+
+    await page.getByRole('link', { name: 'Settings' }).click();
+    await expect(page).toHaveURL(/\/settings/);
+    await expect(page.getByText('Settings')).toBeVisible();
   });
 
 });

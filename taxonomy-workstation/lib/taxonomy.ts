@@ -1,6 +1,5 @@
 import { Store, Parser, DataFactory } from 'n3';
-import fs from 'fs';
-import path from 'path';
+import { fetchFileRaw, getGitLabConfig } from './gitlab-api';
 
 const { namedNode } = DataFactory;
 
@@ -15,8 +14,36 @@ export type TaxonomyNode = {
 let store: Store | null = null;
 let isInitializing = false;
 
-// Use the path from env or default to /tmp for this sandbox environment
+// Dual-mode: support both local dev (server-side) and GitLab Pages (client-side)
 const DATA_DIR = process.env.TAXONOMY_DATA_PATH || '/tmp/taxonomy-data/export/1.25';
+const GITLAB_BASE_PATH = 'export/1.25'; // Path within the GitLab repo
+
+async function loadFileContent(filename: string): Promise<string> {
+  // Client-side: try GitLab API first
+  if (typeof window !== 'undefined') {
+    const config = getGitLabConfig();
+    if (config) {
+      try {
+        const filePath = `${GITLAB_BASE_PATH}/${filename}`;
+        return await fetchFileRaw(filePath);
+      } catch (error) {
+        console.error(`Failed to fetch ${filename} from GitLab:`, error);
+        throw error;
+      }
+    }
+  }
+
+  // Server-side: use filesystem
+  const fs = await import('fs');
+  const path = await import('path');
+  const filePath = path.join(DATA_DIR, filename);
+
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+
+  return fs.readFileSync(filePath, 'utf-8');
+}
 
 export async function getTaxonomyStore(): Promise<Store> {
   if (store) return store;
@@ -32,7 +59,7 @@ export async function getTaxonomyStore(): Promise<Store> {
   const newStore = new Store();
   const parser = new Parser();
 
-  console.log('Loading taxonomy from:', DATA_DIR);
+  console.log('Loading taxonomy...');
 
   try {
     // List relevant files - we focus on core concepts for the workstation
@@ -47,14 +74,13 @@ export async function getTaxonomyStore(): Promise<Store> {
     ];
 
     for (const file of files) {
-      const filePath = path.join(DATA_DIR, file);
-      if (fs.existsSync(filePath)) {
+      try {
         console.log(`Parsing ${file}...`);
-        const content = fs.readFileSync(filePath, 'utf-8');
+        const content = await loadFileContent(file);
         const quads = parser.parse(content);
         newStore.addQuads(quads);
-      } else {
-        console.warn(`File not found: ${filePath}`);
+      } catch (error) {
+        console.warn(`Skipping ${file}:`, error);
       }
     }
 
@@ -157,14 +183,14 @@ export async function getConceptDetails(id: string): Promise<TaxonomyNode | null
     // Try to find label for target
     let targetLabel = target;
     if (quad.object.termType === 'NamedNode') {
-       const targetLabelQuads = store.getQuads(quad.object as unknown as import('n3').Quad_Subject, prefLabelPred, null, null);
-       if (targetLabelQuads.length > 0) {
-         targetLabel = targetLabelQuads[0].object.value;
-       }
+      const targetLabelQuads = store.getQuads(quad.object as unknown as import('n3').Quad_Subject, prefLabelPred, null, null);
+      if (targetLabelQuads.length > 0) {
+        targetLabel = targetLabelQuads[0].object.value;
+      }
     }
 
     relations.push({
-      type: pred.split('/').pop() || pred,
+      type: pred.split('#').pop()?.split('/').pop() || pred,
       target,
       targetLabel
     });

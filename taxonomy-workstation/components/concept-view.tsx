@@ -1,38 +1,50 @@
 'use client';
 
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TaxonomyNode } from '@/lib/taxonomy';
 import { Network, ChevronRight, Share2, Tag, Type } from 'lucide-react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import Link from 'next/link';
 import { InlineEdit } from './inline-edit';
 import { GraphView } from './graph-view';
+import { commitFile, getGitLabConfig } from '@/lib/gitlab-api';
+import { Parser, Writer, DataFactory, Store } from 'n3';
 
-interface ConceptViewProps {
-  concept: TaxonomyNode;
-}
+const { namedNode, literal } = DataFactory;
 
-export function ConceptView({ concept: initialConcept }: ConceptViewProps) {
-  const [concept, setConcept] = React.useState(initialConcept);
+export function ConceptView({ initialConcept }: { initialConcept: TaxonomyNode }) {
+  const [concept, setConcept] = useState<TaxonomyNode>(initialConcept);
 
   // Sync if prop changes (e.g. navigation)
-  React.useEffect(() => {
+  useEffect(() => {
     setConcept(initialConcept);
   }, [initialConcept]);
 
   const handleUpdate = async (field: keyof TaxonomyNode, value: string) => {
-     // Optimistic update
-     setConcept(prev => ({ ...prev, [field]: value }));
+    // Optimistic update
+    setConcept(prev => ({ ...prev, [field]: value }));
 
-     try {
-       // Simulate API call
-       // In a real app: await fetch(`/api/concept/${concept.id}`, { method: 'PATCH', body: JSON.stringify({ [field]: value }) })
-       await new Promise(resolve => setTimeout(resolve, 500));
-       console.log(`[Persistence Mock] Saved ${field} for ${concept.id}:`, value);
-     } catch (error) {
-       console.error("Failed to save:", error);
-       // Revert optimistic update if needed
-     }
+    try {
+      // For GitLab Pages deployment, we need to:
+      // 1. Find which file contains this concept
+      // 2. Update the RDF in memory
+      // 3. Commit via GitLab API
+
+      const config = getGitLabConfig();
+      if (!config) {
+        alert('Please configure GitLab credentials in Settings first!');
+        return;
+      }
+
+      // TODO: Implement proper file lookup and RDF update
+      // For now, we'll just show a success message
+      console.log(`Would commit: ${field} = ${value} for ${concept.id}`);
+      alert('Saving to GitLab is not fully implemented yet. Configure it in Settings!');
+
+    } catch (error) {
+      console.error("Failed to save:", error);
+      alert("Failed to save change!");
+    }
   };
 
   return (
@@ -51,10 +63,10 @@ export function ConceptView({ concept: initialConcept }: ConceptViewProps) {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
-               <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                 {concept.type}
-               </span>
-               <span className="text-xs text-slate-600 font-mono">{concept.id}</span>
+              <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                {concept.type}
+              </span>
+              <span className="text-xs text-slate-600 font-mono">{concept.id}</span>
             </div>
             <h1 className="text-4xl font-bold text-slate-100 mb-4">
               <InlineEdit
@@ -80,21 +92,21 @@ export function ConceptView({ concept: initialConcept }: ConceptViewProps) {
                 <Type size={14} /> Properties
               </h3>
               <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
-                 <div className="text-slate-500">prefLabel</div>
-                 <div className="text-slate-200 font-medium">
-                    <InlineEdit
-                      value={concept.prefLabel}
-                      onSave={(val) => handleUpdate('prefLabel', val)}
-                    />
-                 </div>
-                 <div className="text-slate-500">type</div>
-                 <div className="text-slate-200">{concept.type}</div>
+                <div className="text-slate-500">prefLabel</div>
+                <div className="text-slate-200 font-medium">
+                  <InlineEdit
+                    value={concept.prefLabel}
+                    onSave={(val) => handleUpdate('prefLabel', val)}
+                  />
+                </div>
+                <div className="text-slate-500">type</div>
+                <div className="text-slate-200">{concept.type}</div>
               </div>
             </section>
 
             {/* Relations */}
             <section>
-               <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Network size={14} /> Relations
               </h3>
 
@@ -104,14 +116,14 @@ export function ConceptView({ concept: initialConcept }: ConceptViewProps) {
                 <div className="space-y-2">
                   {concept.relations.map((rel, i) => (
                     <div key={i} className="flex items-center p-3 rounded-lg bg-slate-900/50 border border-slate-800 hover:border-slate-700 transition-colors group">
-                       <div className="w-32 text-xs text-purple-400 font-mono">{rel.type}</div>
-                       <Link
-                         href={`/concept/${encodeURIComponent(rel.target)}`}
-                         className="flex-1 text-sm text-slate-300 hover:text-blue-400 hover:underline flex items-center gap-2"
-                       >
-                         {rel.targetLabel || rel.target}
-                         <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
-                       </Link>
+                      <div className="w-32 text-xs text-purple-400 font-mono">{rel.type}</div>
+                      <Link
+                        href={`/concept/${encodeURIComponent(rel.target)}`}
+                        className="flex-1 text-sm text-slate-300 hover:text-blue-400 hover:underline flex items-center gap-2"
+                      >
+                        {rel.targetLabel || rel.target}
+                        <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
+                      </Link>
                     </div>
                   ))}
                 </div>
