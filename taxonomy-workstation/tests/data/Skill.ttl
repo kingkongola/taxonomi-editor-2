@@ -1,0 +1,12 @@
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix example: <http://example.org/> .
+
+<http://example.org/concept/java> a <http://www.w3.org/2004/02/skos/core#Concept> ;
+    skos:prefLabel "Java programming" ;
+    skos:definition "A high-level, class-based, object-oriented programming language." ;
+    skos:related <http://example.org/concept/python> .
+
+<http://example.org/concept/python> a <http://www.w3.org/2004/02/skos/core#Concept> ;
+    skos:prefLabel "Python" ;
+    skos:definition "An interpreted high-level general-purpose programming language." .
