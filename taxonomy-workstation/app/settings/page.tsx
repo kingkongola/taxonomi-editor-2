@@ -1,6 +1,20 @@
-import { Settings, Monitor, Keyboard, Database } from 'lucide-react';
+'use client';
+
+import { Settings, Monitor, Keyboard, Database, LogIn, LogOut, User } from 'lucide-react';
+import { isAuthenticated, getUserInfo, initiateLogin, logout } from '@/lib/gitlab-oauth';
+import { useState, useEffect } from 'react';
 
 export default function SettingsPage() {
+    const [authenticated, setAuthenticated] = useState(false);
+    const [userInfo, setUserInfo] = useState<{ username: string; name: string } | null>(null);
+    const [projectId, setProjectId] = useState('');
+
+    useEffect(() => {
+        setAuthenticated(isAuthenticated());
+        setUserInfo(getUserInfo());
+        setProjectId(localStorage.getItem('gitlab_project_id') || '');
+    }, []);
+
     return (
         <div className="p-8 max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold mb-8 text-slate-100">Settings</h1>
@@ -37,38 +51,58 @@ export default function SettingsPage() {
 
                 <section>
                     <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <Database size={16} /> GitLab Configuration
+                        <Database size={16} /> GitLab Authentication
                     </h3>
-                    <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden p-4 space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-200 mb-1">GitLab URL</label>
-                            <input
-                                type="text"
-                                placeholder="https://gitlab.com"
-                                className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-300 text-sm focus:outline-none focus:border-blue-500"
-                                onChange={(e) => localStorage.setItem('gitlab_url', e.target.value)}
-                                defaultValue="https://gitlab.com"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-200 mb-1">Project ID</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. 12345678"
-                                className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-300 text-sm focus:outline-none focus:border-blue-500"
-                                onChange={(e) => localStorage.setItem('gitlab_project_id', e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-200 mb-1">Personal Access Token</label>
-                            <input
-                                type="password"
-                                placeholder="glpat-..."
-                                className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-300 text-sm focus:outline-none focus:border-blue-500"
-                                onChange={(e) => localStorage.setItem('gitlab_pat', e.target.value)}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Requires <code>api</code> or <code>write_repository</code> scope.</p>
-                        </div>
+                    <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden p-6 space-y-4">
+                        {authenticated && userInfo ? (
+                            <>
+                                <div className="flex items-center gap-4 p-4 bg-slate-800/50 rounded-lg">
+                                    <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                        <User className="text-blue-400" size={24} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="font-medium text-slate-200">{userInfo.name}</div>
+                                        <div className="text-sm text-slate-400">@{userInfo.username}</div>
+                                    </div>
+                                    <button
+                                        onClick={logout}
+                                        className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded text-slate-200 text-sm transition-colors"
+                                    >
+                                        <LogOut size={16} />
+                                        Logout
+                                    </button>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-200 mb-1">Project ID</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. 12345678"
+                                        value={projectId}
+                                        onChange={(e) => {
+                                            setProjectId(e.target.value);
+                                            localStorage.setItem('gitlab_project_id', e.target.value);
+                                        }}
+                                        className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-300 text-sm focus:outline-none focus:border-blue-500"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        Find this in your GitLab project's Settings → General
+                                    </p>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="text-center py-8">
+                                <p className="text-slate-400 mb-6">
+                                    Login with your GitLab account to save changes to the taxonomy repository.
+                                </p>
+                                <button
+                                    onClick={initiateLogin}
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium transition-colors"
+                                >
+                                    <LogIn size={20} />
+                                    Login with GitLab
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </section>
 
