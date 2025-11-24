@@ -9,26 +9,29 @@ export default function CallbackPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
-        const errorParam = params.get('error');
+        const processCallback = async () => {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            const errorParam = params.get('error');
 
-        if (errorParam) {
-            setError(`Authentication failed: ${errorParam}`);
-            return;
-        }
+            if (errorParam) {
+                setError(`Authentication failed: ${errorParam}`);
+                return;
+            }
 
-        if (code) {
-            handleCallback(code)
-                .then(() => {
+            if (code) {
+                try {
+                    await handleCallback(code);
                     router.push('/');
-                })
-                .catch((err) => {
-                    setError(err.message);
-                });
-        } else {
-            setError('No authorization code received');
-        }
+                } catch (err) {
+                    setError((err as Error).message);
+                }
+            } else {
+                setError('No authorization code received');
+            }
+        };
+
+        processCallback();
     }, [router]);
 
     if (error) {

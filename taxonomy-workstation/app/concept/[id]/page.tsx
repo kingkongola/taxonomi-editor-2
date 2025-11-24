@@ -22,7 +22,7 @@ export default async function ConceptPage({ params }: PageProps) {
 
   return (
     <div className="h-full w-full">
-      <ConceptView concept={concept} />
+      <ConceptView initialConcept={concept} />
     </div>
   );
 }

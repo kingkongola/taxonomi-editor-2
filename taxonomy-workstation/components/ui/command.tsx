@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import { Command as CommandPrimitive } from "cmdk";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Search } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { VisuallyHidden } from "./visually-hidden";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -34,8 +36,12 @@ const CommandDialog = ({
       {...props}
       contentClassName="relative z-50 grid w-full max-w-lg gap-4 overflow-hidden rounded-xl border bg-slate-900 p-0 text-slate-50 shadow-2xl animate-in fade-in-0 zoom-in-95 slide-in-from-top-[48%]"
       overlayClassName="fixed inset-0 bg-black/50 backdrop-blur-sm transition-all"
+      aria-label="Command palette"
     >
-        {children}
+      <VisuallyHidden>
+        <DialogPrimitive.Title>Command Palette</DialogPrimitive.Title>
+      </VisuallyHidden>
+      {children}
     </CommandPrimitive.Dialog>
   );
 };

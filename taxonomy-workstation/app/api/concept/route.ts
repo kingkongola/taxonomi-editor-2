@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getTaxonomyStore } from '@/lib/taxonomy';
 import { commitChange } from '@/lib/git';
 import fs from 'fs';
 import path from 'path';
-import { DataFactory, Writer, Parser } from 'n3';
+import { DataFactory, Writer, Parser, Quad_Subject, Literal } from 'n3';
 
 const { namedNode, literal } = DataFactory;
 
@@ -49,7 +48,7 @@ export async function POST(request: Request) {
         console.log(`Saving ${field} = ${value} for ${id}`);
 
         // 1. Find the file
-        let filename = await findFileForConcept(id);
+        const filename = await findFileForConcept(id);
         if (!filename) {
             // Fallback: if not found, maybe it's new? or we just default to a catch-all
             // For now, let's fail if not found to avoid creating mess
@@ -78,7 +77,7 @@ export async function POST(request: Request) {
 
         // Remove old value
         // We match subject and predicate, remove all (assuming single value for now)
-        const matches = store.getQuads(subject as any, predicate, null, null);
+        const matches = store.getQuads(subject as Quad_Subject, predicate, null, null);
         store.removeQuads(matches);
 
         // Add new value
@@ -86,7 +85,7 @@ export async function POST(request: Request) {
         // Let's check the old value to see if it had a language tag
         let language = undefined;
         if (matches.length > 0 && matches[0].object.termType === 'Literal') {
-            language = (matches[0].object as any).language;
+            language = (matches[0].object as Literal).language;
         }
 
         store.addQuad(subject, predicate, literal(value, language));

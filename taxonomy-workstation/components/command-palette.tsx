@@ -70,10 +70,10 @@ export function CommandPalette() {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
-             {/* Static suggestions or actions */}
-             <CommandItem onSelect={() => runCommand(() => router.push('/'))}>
-                <span>Go to Home</span>
-             </CommandItem>
+            {/* Static suggestions or actions */}
+            <CommandItem onSelect={() => runCommand(() => router.push('/'))}>
+              <span>Go to Home</span>
+            </CommandItem>
           </CommandGroup>
           {results.length > 0 && (
             <CommandGroup heading="Search Results">

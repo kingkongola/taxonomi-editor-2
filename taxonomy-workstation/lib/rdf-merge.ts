@@ -69,8 +69,8 @@ export async function mergeRDF(
     }
 
     // Check if one side removed what the other modified
-    const localRemovedRemoteKept = difference(localRemoved, remoteRemoved);
-    const remoteRemovedLocalKept = difference(remoteRemoved, localRemoved);
+    const localRemovedRemoteKept = arrayDifference(localRemoved, remoteRemoved);
+    const remoteRemovedLocalKept = arrayDifference(remoteRemoved, localRemoved);
 
     for (const quad of localRemovedRemoteKept) {
         // Local removed, remote kept/modified
@@ -138,9 +138,18 @@ function intersection(quadsA: Quad[], quadsB: Quad[]): Quad[] {
 }
 
 /**
+ * Find quads in arrayA that are not in arrayB
+ */
+function arrayDifference(arrayA: Quad[], arrayB: Quad[]): Quad[] {
+    return arrayA.filter(a =>
+        !arrayB.some(b => quadsEqual(a, b))
+    );
+}
+
+/**
  * Find a quad with matching subject and predicate
  */
-function findMatchingQuad(store: Store, subject: any, predicate: any): Quad | null {
+function findMatchingQuad(store: Store, subject: import('n3').Quad_Subject, predicate: import('n3').Quad_Predicate): Quad | null {
     const matches = store.getQuads(subject, predicate, null, null);
     return matches.length > 0 ? matches[0] : null;
 }

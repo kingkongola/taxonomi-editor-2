@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings, Monitor, Keyboard, Database, LogIn, LogOut, User } from 'lucide-react';
+import { Monitor, Keyboard, Database, LogIn, LogOut, User } from 'lucide-react';
 import { isAuthenticated, getUserInfo, initiateLogin, logout } from '@/lib/gitlab-oauth';
 import { useState, useEffect } from 'react';
 
@@ -10,9 +10,13 @@ export default function SettingsPage() {
     const [projectId, setProjectId] = useState('');
 
     useEffect(() => {
-        setAuthenticated(isAuthenticated());
-        setUserInfo(getUserInfo());
-        setProjectId(localStorage.getItem('gitlab_project_id') || '');
+        const loadSettings = () => {
+            setAuthenticated(isAuthenticated());
+            setUserInfo(getUserInfo());
+            setProjectId(localStorage.getItem('gitlab_project_id') || '');
+        };
+
+        loadSettings();
     }, []);
 
     return (
@@ -85,7 +89,7 @@ export default function SettingsPage() {
                                         className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-300 text-sm focus:outline-none focus:border-blue-500"
                                     />
                                     <p className="text-xs text-slate-500 mt-1">
-                                        Find this in your GitLab project's Settings → General
+                                        Find this in your GitLab project&apos;s Settings → General
                                     </p>
                                 </div>
                             </>

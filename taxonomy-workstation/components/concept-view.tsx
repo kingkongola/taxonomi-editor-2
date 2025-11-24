@@ -2,32 +2,38 @@
 
 import React, { useState, useEffect } from 'react';
 import { TaxonomyNode } from '@/lib/taxonomy';
-import { Network, ChevronRight, Share2, Tag, Type, Plus } from 'lucide-react';
+import { Network, ChevronRight, Type, Plus } from 'lucide-react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import Link from 'next/link';
 import { InlineEdit } from './inline-edit';
 import { GraphView } from './graph-view';
 import { smartCommitFile, ConflictError, fetchFileRaw } from '@/lib/gitlab-api';
-import { Parser, Writer, DataFactory, Store } from 'n3';
+import { Parser, DataFactory, Store } from 'n3';
 import { AddRelationDialog } from './add-relation-dialog';
 import { ConflictResolver } from './conflict-resolver';
 import { serializeStore } from '@/lib/rdf-merge';
 
-const { namedNode, literal } = DataFactory;
+const { namedNode } = DataFactory;
+
+interface ConflictData {
+  conflicts: Array<{
+    type: 'modification' | 'deletion';
+    subject: string;
+    predicate: string;
+    localValue: string;
+    remoteValue: string;
+  }>;
+  baseContent: string;
+  remoteContent: string;
+  pendingRelation: { type: string; target: string; targetLabel?: string };
+}
 
 export function ConceptView({ initialConcept }: { initialConcept: TaxonomyNode }) {
   const [concept, setConcept] = useState<TaxonomyNode>(initialConcept);
   const [showAddRelation, setShowAddRelation] = useState(false);
   const [showConflictResolver, setShowConflictResolver] = useState(false);
-  const [conflictData, setConflictData] = useState<any>(null);
+  const [conflictData, setConflictData] = useState<ConflictData | null>(null);
   const [baseContent, setBaseContent] = useState<string>('');
-
-  // Sync if prop changes (e.g. navigation)
-  useEffect(() => {
-    setConcept(initialConcept);
-    // Load base content for conflict detection
-    loadBaseContent();
-  }, [initialConcept]);
 
   const loadBaseContent = async () => {
     try {
@@ -38,6 +44,17 @@ export function ConceptView({ initialConcept }: { initialConcept: TaxonomyNode }
       console.error('Failed to load base content:', error);
     }
   };
+
+  // Sync if prop changes (e.g. navigation)
+  useEffect(() => {
+    const syncConcept = async () => {
+      setConcept(initialConcept);
+      // Load base content for conflict detection
+      await loadBaseContent();
+    };
+
+    syncConcept();
+  }, [initialConcept]);
 
   const handleAddRelation = async (relationType: string, targetId: string, targetLabel: string) => {
     setShowAddRelation(false);
@@ -103,7 +120,7 @@ export function ConceptView({ initialConcept }: { initialConcept: TaxonomyNode }
     }
   };
 
-  const handleResolveConflicts = async (resolutions: Map<number, 'local' | 'remote'>) => {
+  const handleResolveConflicts = async () => {
     // TODO: Apply resolutions and retry commit
     setShowConflictResolver(false);
     alert('Conflict resolution not fully implemented yet');
@@ -201,7 +218,7 @@ export function ConceptView({ initialConcept }: { initialConcept: TaxonomyNode }
                   <p className="text-slate-600 italic text-sm">No relations defined.</p>
                 ) : (
                   <div className="space-y-2">
-                    {concept.relations.map((rel, i) => (
+                    {concept.relations.filter(rel => rel && rel.type).map((rel, i) => (
                       <div key={i} className="flex items-center p-3 rounded-lg bg-slate-900/50 border border-slate-800 hover:border-slate-700 transition-colors group">
                         <div className="w-32 text-xs text-purple-400 font-mono">{rel.type}</div>
                         <Link

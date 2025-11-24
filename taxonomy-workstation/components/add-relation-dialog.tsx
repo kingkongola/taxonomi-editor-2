@@ -3,6 +3,12 @@
 import { useState } from 'react';
 import { Plus, Search, X } from 'lucide-react';
 
+interface SearchResult {
+    id: string;
+    prefLabel: string;
+    type: string;
+}
+
 interface AddRelationProps {
     onAdd: (relationType: string, targetId: string, targetLabel: string) => void;
     onCancel: () => void;
@@ -19,8 +25,8 @@ const RELATION_TYPES = [
 export function AddRelationDialog({ onAdd, onCancel }: AddRelationProps) {
     const [relationType, setRelationType] = useState(RELATION_TYPES[0].value);
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [selectedConcept, setSelectedConcept] = useState<any>(null);
+    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+    const [selectedConcept, setSelectedConcept] = useState<SearchResult | null>(null);
     const [isSearching, setIsSearching] = useState(false);
 
     const handleSearch = async (query: string) => {
