@@ -2,9 +2,10 @@ import { CommandPalette } from '@/components/command-palette';
 import { Sidebar } from '@/components/sidebar';
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Cinzel, Josefin_Sans } from "next/font/google";
 
-const inter = Inter({ subsets: ["latin"] });
+const cinzel = Cinzel({ subsets: ["latin"], variable: '--font-cinzel' });
+const josefin = Josefin_Sans({ subsets: ["latin"], variable: '--font-josefin' });
 
 export const metadata: Metadata = {
   title: "Taxonomy Workstation",
@@ -18,11 +19,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.className} bg-slate-950 text-slate-100 h-screen flex overflow-hidden`}>
-        <Sidebar />
-        <main className="flex-1 h-full overflow-hidden relative">
-          {children}
-        </main>
+      <body className={`${josefin.className} ${cinzel.variable} bg-slate-950 text-slate-100 min-h-screen flex flex-col`}>
+        <div className="flex flex-1 relative">
+          <Sidebar />
+          <main className="flex-1 relative min-h-0">
+            {children}
+          </main>
+        </div>
         <CommandPalette />
       </body>
     </html>

@@ -34,7 +34,7 @@ const CommandDialog = ({
   return (
     <CommandPrimitive.Dialog
       {...props}
-      contentClassName="relative z-50 grid w-full max-w-lg gap-4 overflow-hidden rounded-xl border bg-slate-900 p-0 text-slate-50 shadow-2xl animate-in fade-in-0 zoom-in-95 slide-in-from-top-[48%]"
+      contentClassName="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 grid w-full max-w-lg gap-4 overflow-hidden rounded-xl border bg-slate-900 p-0 text-slate-50 shadow-2xl animate-in fade-in-0 zoom-in-95 slide-in-from-top-[48%]"
       overlayClassName="fixed inset-0 bg-black/50 backdrop-blur-sm transition-all"
       aria-label="Command palette"
     >

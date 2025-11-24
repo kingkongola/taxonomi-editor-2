@@ -19,11 +19,26 @@ import { TaxonomyNode } from '@/lib/taxonomy';
 // Custom Node Component
 const CustomNode = memo(({ data }: { data: { label: string, type: string } }) => {
   return (
-    <div className="px-4 py-2 shadow-lg rounded-md bg-slate-900 border border-slate-700 text-slate-100 min-w-[150px] text-center">
-      <Handle type="target" position={Position.Left} className="w-2 h-2 bg-blue-500" />
-      <div className="text-xs text-slate-500 mb-1 uppercase tracking-wider">{data.type}</div>
-      <div className="font-bold text-sm">{data.label}</div>
-      <Handle type="source" position={Position.Right} className="w-2 h-2 bg-blue-500" />
+    <div className="relative group">
+      {/* Decorative background glow */}
+      <div className="absolute inset-0 bg-[var(--deco-gold)] blur-md opacity-20 group-hover:opacity-40 transition-opacity rounded-sm"></div>
+
+      <div className="relative px-6 py-3 shadow-[0_0_15px_rgba(0,0,0,0.5)] bg-[var(--deco-bg)] border border-[var(--deco-gold)] min-w-[160px] text-center transition-transform group-hover:scale-105 duration-300">
+        {/* Corner accents */}
+        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[var(--deco-gold)]"></div>
+        <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[var(--deco-gold)]"></div>
+        <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[var(--deco-gold)]"></div>
+        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[var(--deco-gold)]"></div>
+
+        <Handle type="target" position={Position.Left} className="w-2 h-2 bg-[var(--deco-gold)] border border-black" />
+
+        <div className="text-[10px] text-[var(--deco-gold-dim)] mb-1 uppercase tracking-[0.2em] font-cinzel border-b border-[var(--deco-gold)]/20 pb-1 inline-block">
+          {data.type}
+        </div>
+        <div className="font-bold text-sm text-[var(--deco-text)] font-josefin tracking-wide">{data.label}</div>
+
+        <Handle type="source" position={Position.Right} className="w-2 h-2 bg-[var(--deco-gold)] border border-black" />
+      </div>
     </div>
   );
 });
@@ -64,7 +79,7 @@ export function GraphView({ centerNode }: GraphViewProps) {
       source: centerNode.id,
       target: rel.target,
       animated: true,
-      style: { stroke: '#64748b' },
+      style: { stroke: '#D4AF37', strokeWidth: 1 },
     });
   });
 
@@ -72,7 +87,15 @@ export function GraphView({ centerNode }: GraphViewProps) {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   return (
-    <div className="h-full w-full bg-slate-950">
+    <div className="h-full w-full bg-[var(--deco-bg)] relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 50% 50%, var(--deco-gold) 1px, transparent 1px)',
+          backgroundSize: '40px 40px'
+        }}>
+      </div>
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -80,11 +103,15 @@ export function GraphView({ centerNode }: GraphViewProps) {
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
         fitView
-        className="bg-slate-950"
+        className="bg-transparent"
       >
-        <Background color="#1e293b" gap={16} />
-        <Controls className="bg-slate-900 border-slate-800 fill-slate-400" />
-        <MiniMap className="bg-slate-900 border-slate-800" nodeColor="#3b82f6" />
+        <Background color="#D4AF37" gap={40} size={1} className="opacity-5" />
+        <Controls className="bg-[var(--deco-bg)] border-[var(--deco-gold)] fill-[var(--deco-gold)] [&>button]:border-b-[var(--deco-gold)] hover:[&>button]:bg-[var(--deco-gold)]/20" />
+        <MiniMap
+          className="bg-[var(--deco-bg)] border border-[var(--deco-gold)]"
+          nodeColor="#D4AF37"
+          maskColor="rgba(5, 5, 5, 0.8)"
+        />
       </ReactFlow>
     </div>
   );

@@ -12,6 +12,7 @@ import { Parser, DataFactory, Store } from 'n3';
 import { AddRelationDialog } from './add-relation-dialog';
 import { ConflictResolver } from './conflict-resolver';
 import { serializeStore } from '@/lib/rdf-merge';
+import { DecoCorner } from './ui/deco-frame';
 
 const { namedNode } = DataFactory;
 
@@ -143,34 +144,38 @@ export function ConceptView({ initialConcept }: { initialConcept: TaxonomyNode }
 
   return (
     <>
-      <PanelGroup direction="horizontal" className="h-full">
+      <PanelGroup direction="horizontal" className="h-full bg-[var(--deco-bg)]">
         <Panel defaultSize={50} minSize={30}>
-          <div className="h-full overflow-y-auto p-8 bg-slate-950">
-            {/* Breadcrumb mock */}
-            <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
+          <div className="h-full overflow-y-auto p-8 deco-sunburst relative">
+
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-xs text-[var(--deco-gold-dim)] mb-8 font-cinzel tracking-widest uppercase">
               <span>Taxonomy</span>
-              <ChevronRight size={12} />
+              <ChevronRight size={10} />
               <span>{concept.type}</span>
-              <ChevronRight size={12} />
-              <span className="text-slate-300">{concept.prefLabel}</span>
+              <ChevronRight size={10} />
+              <span className="text-[var(--deco-gold)]">{concept.prefLabel}</span>
             </div>
 
             {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <div className="mb-12 relative">
+              <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-[var(--deco-gold)] to-transparent opacity-50"></div>
+
+              <div className="flex items-center gap-3 mb-4">
+                <span className="px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase border border-[var(--deco-gold)] text-[var(--deco-gold)] bg-black/50">
                   {concept.type}
                 </span>
-                <span className="text-xs text-slate-600 font-mono">{concept.id}</span>
+                <span className="text-xs text-[var(--deco-gold-dim)] font-mono opacity-70">{concept.id}</span>
               </div>
-              <h1 className="text-4xl font-bold text-slate-100 mb-4">
+
+              <h1 className="text-5xl font-bold text-[var(--deco-text)] mb-6 font-cinzel deco-gradient-text">
                 <InlineEdit
                   value={concept.prefLabel}
                   onSave={(val) => handleUpdate('prefLabel', val)}
                 />
               </h1>
 
-              <div className="text-lg text-slate-400 leading-relaxed">
+              <div className="text-lg text-[var(--deco-text)]/80 leading-relaxed pl-4 border-l border-[var(--deco-gold-dim)]/30 italic">
                 <InlineEdit
                   value={concept.definition || ''}
                   onSave={(val) => handleUpdate('definition', val)}
@@ -181,52 +186,68 @@ export function ConceptView({ initialConcept }: { initialConcept: TaxonomyNode }
             </div>
 
             {/* Properties */}
-            <div className="space-y-8">
+            <div className="space-y-12">
               <section>
-                <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Type size={14} /> Properties
-                </h3>
-                <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
-                  <div className="text-slate-500">prefLabel</div>
-                  <div className="text-slate-200 font-medium">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-px flex-1 bg-gradient-to-r from-[var(--deco-gold)]/50 to-transparent"></div>
+                  <h3 className="text-sm font-bold text-[var(--deco-gold)] uppercase tracking-[0.3em] font-cinzel flex items-center gap-2">
+                    <Type size={14} /> Properties
+                  </h3>
+                  <div className="h-px flex-1 bg-gradient-to-l from-[var(--deco-gold)]/50 to-transparent"></div>
+                </div>
+
+                <div className="grid grid-cols-[140px_1fr] gap-4 text-sm p-6 border border-[var(--deco-gold)]/20 bg-black/40 backdrop-blur-sm relative">
+                  <DecoCorner position="top-left" className="scale-75" />
+                  <DecoCorner position="bottom-right" className="scale-75" />
+
+                  <div className="text-[var(--deco-gold-dim)] font-cinzel tracking-wider self-center">prefLabel</div>
+                  <div className="text-[var(--deco-text)] font-medium">
                     <InlineEdit
                       value={concept.prefLabel}
                       onSave={(val) => handleUpdate('prefLabel', val)}
                     />
                   </div>
-                  <div className="text-slate-500">type</div>
-                  <div className="text-slate-200">{concept.type}</div>
+                  <div className="h-px col-span-2 bg-[var(--deco-gold)]/10 my-2"></div>
+                  <div className="text-[var(--deco-gold-dim)] font-cinzel tracking-wider self-center">type</div>
+                  <div className="text-[var(--deco-text)]">{concept.type}</div>
                 </div>
               </section>
 
               {/* Relations */}
               <section>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                    <Network size={14} /> Relations
-                  </h3>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="h-px w-12 bg-[var(--deco-gold)]/50"></div>
+                    <h3 className="text-sm font-bold text-[var(--deco-gold)] uppercase tracking-[0.3em] font-cinzel flex items-center gap-2">
+                      <Network size={14} /> Relations
+                    </h3>
+                  </div>
+
                   <button
                     onClick={() => setShowAddRelation(true)}
-                    className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-white text-xs font-medium transition-colors"
+                    className="group relative px-4 py-2 bg-transparent overflow-hidden"
                   >
-                    <Plus size={14} />
-                    Add Relation
+                    <div className="absolute inset-0 border border-[var(--deco-gold)] transition-all group-hover:bg-[var(--deco-gold)]/10"></div>
+                    <div className="absolute inset-0 border border-[var(--deco-gold)] scale-[0.98] opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500"></div>
+                    <span className="relative flex items-center gap-2 text-[var(--deco-gold)] text-xs font-bold tracking-widest uppercase font-cinzel">
+                      <Plus size={14} /> Add Relation
+                    </span>
                   </button>
                 </div>
 
                 {concept.relations.length === 0 ? (
-                  <p className="text-slate-600 italic text-sm">No relations defined.</p>
+                  <p className="text-[var(--deco-gold-dim)] italic text-sm text-center py-8 border border-dashed border-[var(--deco-gold)]/20">No relations defined.</p>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {concept.relations.filter(rel => rel && rel.type).map((rel, i) => (
-                      <div key={i} className="flex items-center p-3 rounded-lg bg-slate-900/50 border border-slate-800 hover:border-slate-700 transition-colors group">
-                        <div className="w-32 text-xs text-purple-400 font-mono">{rel.type}</div>
+                      <div key={i} className="flex items-center p-4 bg-gradient-to-r from-[var(--deco-gold)]/5 to-transparent border-l-2 border-[var(--deco-gold)] hover:bg-[var(--deco-gold)]/10 transition-all group relative overflow-hidden">
+                        <div className="w-40 text-xs text-[var(--deco-gold-dim)] font-cinzel tracking-wider uppercase">{rel.type}</div>
                         <Link
                           href={`/concept/${encodeURIComponent(rel.target)}`}
-                          className="flex-1 text-sm text-slate-300 hover:text-blue-400 hover:underline flex items-center gap-2"
+                          className="flex-1 text-sm text-[var(--deco-text)] group-hover:text-[var(--deco-gold)] flex items-center gap-2 font-josefin"
                         >
                           {rel.targetLabel || rel.target}
-                          <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
+                          <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-all ml-auto text-[var(--deco-gold)]" />
                         </Link>
                       </div>
                     ))}
@@ -236,7 +257,11 @@ export function ConceptView({ initialConcept }: { initialConcept: TaxonomyNode }
             </div>
           </div>
         </Panel>
-        <PanelResizeHandle className="w-px bg-slate-800 hover:bg-blue-500 transition-colors cursor-col-resize" />
+
+        <PanelResizeHandle className="w-1 bg-[var(--deco-bg)] border-l border-r border-[var(--deco-gold-dim)]/30 hover:border-[var(--deco-gold)] transition-colors cursor-col-resize relative">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-8 border-y border-[var(--deco-gold)] bg-[var(--deco-bg)] z-10"></div>
+        </PanelResizeHandle>
+
         <Panel defaultSize={50} minSize={30}>
           <GraphView centerNode={concept} />
         </Panel>

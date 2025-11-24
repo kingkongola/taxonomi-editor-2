@@ -115,15 +115,18 @@ export async function searchConcepts(query: string, limit = 50): Promise<Taxonom
     if (label.toLowerCase().includes(lowerQuery)) {
       const subject = quad.subject;
 
-      // Get type
+      // Get type - find the most specific type, not just skos:Concept
       const rdfType = namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
-      // In N3 v1.16+, match returns a stream/dataset, but we can iterate it.
-      // However, the error suggests .next() does not exist on the return type of match.
-      // N3 store.match returns a Stream which is also an Iterable in some versions, but let's be safe.
-      // Casting to 'Quad_Subject' via unknown to satisfy TS
       const typeQuads = store.getQuads(subject as unknown as import('n3').Quad_Subject, rdfType, null, null);
-      const typeQuad = typeQuads.length > 0 ? typeQuads[0] : null;
-      const type = typeQuad ? typeQuad.object.value.split('/').pop() || 'Concept' : 'Concept';
+
+      // Filter out generic SKOS types and find the most specific type
+      const specificType = typeQuads
+        .map(q => q.object.value)
+        .filter(t => !t.includes('skos/core') && !t.includes('rdf-schema')) // Skip generic SKOS/RDFS types
+        .map(t => t.split('/').pop() || t.split('#').pop() || 'Concept')
+        .find(t => t !== 'Concept') || 'Concept';
+
+      const type = specificType;
 
       // Get definition
       const definitionPred = namedNode('http://www.w3.org/2004/02/skos/core#definition');
@@ -158,11 +161,18 @@ export async function getConceptDetails(id: string): Promise<TaxonomyNode | null
 
   const prefLabel = labelQuad.object.value;
 
-  // Type
+  // Type - find the most specific type, not just skos:Concept
   const rdfType = namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
   const typeQuads = store.getQuads(subject as unknown as import('n3').Quad_Subject, rdfType, null, null);
-  const typeQuad = typeQuads.length > 0 ? typeQuads[0] : null;
-  const type = typeQuad ? typeQuad.object.value.split('/').pop() || 'Concept' : 'Concept';
+
+  // Filter out generic SKOS types and find the most specific type
+  const specificType = typeQuads
+    .map(q => q.object.value)
+    .filter(t => !t.includes('skos/core') && !t.includes('rdf-schema')) // Skip generic SKOS/RDFS types
+    .map(t => t.split('/').pop() || t.split('#').pop() || 'Concept')
+    .find(t => t !== 'Concept') || 'Concept';
+
+  const type = specificType;
 
   // Definition
   const definitionPred = namedNode('http://www.w3.org/2004/02/skos/core#definition');
